@@ -19,7 +19,7 @@ namespace CatalogParser
             Document = document;
         }
 
-        public struct ProductInfo
+        public class ProductInfo
         {
             public string regionName;
             public List<string> breadCrumb;
@@ -29,6 +29,22 @@ namespace CatalogParser
             public string availableStatus;
             public List<string> picUrls;
             public string productUrl;
+
+            public string ToString(string sep)
+            {
+                string listSep = " ";
+                List<string> result = new List<string>();
+                result.Add(regionName + sep);
+                result.AddRange(breadCrumb.Select(x => x + listSep));
+                result.Add(productName + sep);
+                result.Add(actualPrice + sep);
+                result.Add(oldPrice + sep);
+                result.Add(availableStatus + sep);
+                result.AddRange(picUrls.Select(x => x + listSep));
+                result.Add(productUrl + sep);
+
+                return String.Join("", result);
+            }
         }
 
         //Async constructor
@@ -57,36 +73,49 @@ namespace CatalogParser
         }
         public string ExtractProductName()
         {
-            string ProductNameSelector = "h1.detail-name";
-            var productName = Document.QuerySelector(ProductNameSelector).TextContent.Trim();
+            string productNameSelector = "h1.detail-name";
+            var productName = Document.QuerySelector(productNameSelector).TextContent.Trim();
             return productName;
         }
         public string ExtractActualPrice()
         {
-            string ActualPriceSelector = "span.price";
-            var actualPrice = Document.QuerySelector(ActualPriceSelector).TextContent;
+            string actualPriceSelector = "span.price";
+            var actualPrice = Document.QuerySelector(actualPriceSelector).TextContent;
             return actualPrice;
         }
         public string ExtractOldPrice()
         {
-            string OldPriceSelector = "span.old-price";
-            var oldPrice = Document.QuerySelector(OldPriceSelector).TextContent.Trim();
+            string oldPriceSelector = "span.old-price";
+            string oldPrice = GetContentIfExist(oldPriceSelector).First().Trim();
+
             return oldPrice;
         }
         public string ExtractAvailableStatus()
         {
-            string AvailableStatusSelector = "span.ok";
-            var availableStatus = Document.QuerySelector(AvailableStatusSelector).TextContent.Trim();
+            string availableStatusSelector = "span.ok";
+            var availableStatus = Document.QuerySelector(availableStatusSelector).TextContent.Trim();
             return availableStatus;
         }
         public List<string> ExtractPicUrls()
         {
             string picUrlsSelector = @"div.row.align-content-stretch.my-4 div.col-12.col-md-10.col-lg-7 div.card-slider-for";
-            var test = Document.QuerySelector(picUrlsSelector).Children.Select(x => x.Children.First().Children.First()).ToList();
-            List<string> pictureUrls = test.Select(x => x.GetType().GetProperty("Source").GetValue(x).ToString()).ToList();
+            var listOfImgUrls = Document.QuerySelector(picUrlsSelector).Children.Select(x => x.Children.First().Children.First()).ToList();
+            List<string> pictureUrls = listOfImgUrls.Select(x => x.GetType().GetProperty("Source").GetValue(x).ToString()).ToList();
 
             return pictureUrls;
         }
+
+        //TODO: Везде добавить
+        private List<string> GetContentIfExist(string selector)
+        {
+            var content = Document.QuerySelector(selector);
+            if (content != null)
+            {
+                return Document.QuerySelectorAll(selector).Select(x => x.TextContent).ToList();
+            }
+            else return new List<string>() { "" };
+        }
+
         #endregion
         public ProductInfo ParseProductPage()
         {
