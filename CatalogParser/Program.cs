@@ -15,6 +15,7 @@ namespace CatalogParser
                 Console.WriteLine("Please add arguments: the path to the file, as well as the separator character (without extra spaces)");
                 Console.WriteLine("Example: 'start CatalogParser.exe test.exe ;'");
                 Console.ReadLine();
+                return;
             }
 
             var filePath = args[0];
