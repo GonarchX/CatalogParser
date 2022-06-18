@@ -30,17 +30,16 @@ namespace CatalogParser
             public List<string> picUrls;
             public string productUrl;
 
-            public string ToString(string sep)
+            public string ToString(string sep, string listSep = " ")
             {
-                string listSep = " ";
                 List<string> result = new();
                 result.Add(regionName + sep);
-                result.AddRange(breadCrumb.Select(x => x + listSep));
+                result.Add(String.Join(listSep, (breadCrumb.Select(x => x)).ToArray()) + sep);
                 result.Add(productName + sep);
                 result.Add(actualPrice + sep);
                 result.Add(oldPrice + sep);
                 result.Add(availableStatus + sep);
-                result.AddRange(picUrls.Select(x => x + listSep));
+                result.Add(String.Join(listSep, (picUrls.Select(x => x)).ToArray()) + sep);
                 result.Add(productUrl + sep);
 
                 return String.Join("", result);
@@ -58,13 +57,13 @@ namespace CatalogParser
 
         readonly Dictionary<string, string> selectors = new()
         {
-            {"regionName", @"a[data-src=""#region""]"},
-            {"breadCrumb", @"nav.breadcrumb > :not(:last-child)"},
-            {"productName", "h1.detail-name"},
-            {"actualPrice", "span.price"},
-            {"oldPrice", "span.old-price"},
-            {"availableStatus", "span.ok"},
-            {"picUrls", @"div.row.align-content-stretch.my-4 div.col-12.ol-md-10.col-lg-7 div.card-slider-for"}
+            { "regionName", @"a[data-src=""#region""]" },
+            { "breadCrumb", @"nav.breadcrumb > :not(:last-child)" },
+            { "productName", "h1.detail-name" },
+            { "actualPrice", "span.price" },
+            { "oldPrice", "span.old-price" },
+            { "availableStatus", "span.ok" },
+            { "picUrls", @"div.row.align-content-stretch.my-4 div.col-12.ol-md-10.col-lg-7 div.card-slider-for" }
         };
         public string ExtractDataBySelector(string selector)
         {
@@ -74,7 +73,7 @@ namespace CatalogParser
             return dataFromSite;
         }
         public List<string> ExtractAllDataBySelector(string selector)
-        {            
+        {
             var dataFromSite = GetContentIfExist(selector).Select(x => Regex.Replace(x, @"\t|\n|\r", "").Trim()).ToList();
             return dataFromSite;
         }

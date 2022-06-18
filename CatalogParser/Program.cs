@@ -11,11 +11,12 @@ namespace CatalogParser
         {
             if (!IsCorrectInput(args))
             {
-                Console.ReadLine(); 
+                Console.WriteLine("Press ENTER to exit from the application");
+                Console.ReadLine();
                 return;
             }
 
-            var filePath = args[0];            
+            var filePath = args[0];
             var sep = args[1];
             var watch = new Stopwatch();
             watch.Start();
@@ -26,20 +27,23 @@ namespace CatalogParser
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);                
+                Console.WriteLine(ex);
             }
             watch.Stop();
             TimeSpan timeSpan = watch.Elapsed;
             Console.WriteLine("Time: {0}h {1}m {2}s {3}ms", timeSpan.Hours, timeSpan.Minutes,
             timeSpan.Seconds, timeSpan.Milliseconds);
+            Console.WriteLine("Press ENTER to exit from the application");
             Console.ReadLine();
         }
 
-        static private bool IsCorrectInput(string[] args) {
+        static private bool IsCorrectInput(string[] args)
+        {
             if (args.Length != 2)
             {
-                Console.WriteLine("Start application from the console!");
-                Console.WriteLine("Please add arguments: the path to the file, as well as the separator character");
+                Console.WriteLine("Instruction: ");
+                Console.WriteLine("Make sure that you are starting application from the console");
+                Console.WriteLine("Make sure that you don't forget to add the arguments: the path to the file and the delimiter string");
                 Console.WriteLine("Example: 'start CatalogParser.exe test.exe ;'");
                 return false;
             }
