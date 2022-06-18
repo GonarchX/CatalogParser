@@ -12,21 +12,26 @@ namespace CatalogParser
     {
         const string domainName = "https://www.toy.ru";
         const string productUrlsSelector = @"div[class*=""h-100 product-card""] a.d-block.img-link.text-center.gtm-click";
-        public static async Task<List<ProductInfo>> ParseCatalogAsync(string catalogPath, string csvFilePath, string sep)
+        public static async Task<List<ProductInfo>> ParseCatalogAsync(string catalogPath)
         {
+            //Getting the first element to compare the other elements with it
+            //because we don't know the count of pages in the catalog
             List<string> productUrlsOnFirstPage = await ExtractAllProductUrlsOnPageAsync(catalogPath, 1);
             if (productUrlsOnFirstPage == null) throw new Exception($"Unavailable to extract products from first page in path: {domainName}{catalogPath}!");
 
             List<string> productUrlsOnCurrentPage = null;
             int curCatalogPageNum = 2;
-
             var tasks = new List<Task<ProductInfo>>();
-            //This loop stops when the current and first pages are equal, because the site returns the first page in the catalog when trying to get a non-existent page
+
+            //This cycle stops when the current and first pages are equal,
+            //because the site will return the first page in the catalog if we try to get a non-existent page
             while (!IsEqualsCatalogPages(productUrlsOnFirstPage, productUrlsOnCurrentPage))
             {
                 var syncCurCatalogPage = curCatalogPageNum;
+                //On the first iteration we need to take first page urls
                 productUrlsOnCurrentPage = curCatalogPageNum == 2 ? productUrlsOnFirstPage : productUrlsOnCurrentPage;
 
+                //Creating a thread for each product on the page
                 for (int i = 0; i < productUrlsOnCurrentPage.Count; i++)
                 {
                     int syncCurProductPage = i;

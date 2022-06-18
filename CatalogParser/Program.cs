@@ -9,7 +9,7 @@ namespace CatalogParser
         const string catalogPath = "catalog/boy_transport";
         static async Task Main(string[] args)
         {
-            if (!isCorrectInput(args))
+            if (!IsCorrectInput(args))
             {
                 Console.ReadLine(); 
                 return;
@@ -21,7 +21,7 @@ namespace CatalogParser
             watch.Start();
             try
             {
-                var parsedCatalog = await CatalogParser.ParseCatalogAsync(catalogPath, filePath, sep);
+                var parsedCatalog = await CatalogParser.ParseCatalogAsync(catalogPath);
                 CsvUtils.WriteProductInfoInFile(filePath, parsedCatalog, sep);
             }
             catch (Exception ex)
@@ -35,7 +35,7 @@ namespace CatalogParser
             Console.ReadLine();
         }
 
-        static private bool isCorrectInput(string[] args) {
+        static private bool IsCorrectInput(string[] args) {
             if (args.Length != 2)
             {
                 Console.WriteLine("Start application from the console!");

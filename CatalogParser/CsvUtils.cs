@@ -19,7 +19,7 @@ namespace CatalogParser
             if (!File.Exists(filePath)) File.AppendAllText(filePath, 
                 String.Join(sep ,source[0].GetType().GetFields().Select(x => x.Name)) + Environment.NewLine);
 
-            StringBuilder sb = new StringBuilder(100);
+            StringBuilder sb = new(100);
             foreach (var record in source)
             {
                 sb.Append(record.ToString(sep));
@@ -32,7 +32,7 @@ namespace CatalogParser
             if (atype == null) return new Dictionary<string, object>();
             Type t = atype.GetType();
             PropertyInfo[] props = t.GetProperties();
-            Dictionary<string, object> dict = new Dictionary<string, object>();
+            Dictionary<string, object> dict = new();
             foreach (PropertyInfo prp in props)
             {
                 object value = prp.GetValue(atype, Array.Empty<object>());

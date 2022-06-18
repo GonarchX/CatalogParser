@@ -33,7 +33,7 @@ namespace CatalogParser
             public string ToString(string sep)
             {
                 string listSep = " ";
-                List<string> result = new List<string>();
+                List<string> result = new();
                 result.Add(regionName + sep);
                 result.AddRange(breadCrumb.Select(x => x + listSep));
                 result.Add(productName + sep);
@@ -56,46 +56,30 @@ namespace CatalogParser
             return new ProductParser(productUrl, document);
         }
 
-        #region Extract info methods group
-        public string ExtractRegionName()
+        readonly Dictionary<string, string> selectors = new()
         {
-            string regionNameSelector = @"a[data-src=""#region""]";
-            var siteRegionName = GetContentIfExist(regionNameSelector).First().Trim();
+            {"regionName", @"a[data-src=""#region""]"},
+            {"breadCrumb", @"nav.breadcrumb > :not(:last-child)"},
+            {"productName", "h1.detail-name"},
+            {"actualPrice", "span.price"},
+            {"oldPrice", "span.old-price"},
+            {"availableStatus", "span.ok"},
+            {"picUrls", @"div.row.align-content-stretch.my-4 div.col-12.ol-md-10.col-lg-7 div.card-slider-for"}
+        };
+        public string ExtractDataBySelector(string selector)
+        {
+            var dataFromSite = GetContentIfExist(selector).First();
             //Deleting unnecessary symbols from region name
-            siteRegionName = Regex.Replace(siteRegionName, @"\t|\n|\r", "").Trim();
-            return siteRegionName;
+            dataFromSite = Regex.Replace(dataFromSite, @"\t|\n|\r", "").Trim();
+            return dataFromSite;
         }
-        public List<string> ExtractBreadCrumb()
-        {
-            var breadCrumbSelector = @"nav.breadcrumb > :not(:last-child)";
-            var breadCrumbs = GetContentIfExist(breadCrumbSelector).Select(x => x.Trim()).ToList();
-            return breadCrumbs;
+        public List<string> ExtractAllDataBySelector(string selector)
+        {            
+            var dataFromSite = GetContentIfExist(selector).Select(x => Regex.Replace(x, @"\t|\n|\r", "").Trim()).ToList();
+            return dataFromSite;
         }
-        public string ExtractProductName()
-        {
-            string productNameSelector = "h1.detail-name";
-            var productName = GetContentIfExist(productNameSelector).First().Trim();
-            return productName;
-        }
-        public string ExtractActualPrice()
-        {
-            string actualPriceSelector = "span.price";
-            var actualPrice = GetContentIfExist(actualPriceSelector).First().Trim();
-            return actualPrice;
-        }
-        public string ExtractOldPrice()
-        {
-            string oldPriceSelector = "span.old-price";
-            string oldPrice = GetContentIfExist(oldPriceSelector).First().Trim();
 
-            return oldPrice;
-        }
-        public string ExtractAvailableStatus()
-        {
-            string availableStatusSelector = "span.ok";
-            var availableStatus = GetContentIfExist(availableStatusSelector).First().Trim();
-            return availableStatus;
-        }
+        //This method looks ugly because angle sharp cannot find the URLs of product images using the css selector.
         public List<string> ExtractPicUrls()
         {
             string picUrlsSelector = @"div.row.align-content-stretch.my-4 div.col-12.col-md-10.col-lg-7 div.card-slider-for";
@@ -105,7 +89,6 @@ namespace CatalogParser
             return pictureUrls;
         }
 
-        //TODO: Везде добавить
         private List<string> GetContentIfExist(string selector)
         {
             var content = Document.QuerySelector(selector);
@@ -116,17 +99,16 @@ namespace CatalogParser
             else return new List<string>() { "" };
         }
 
-        #endregion
         public ProductInfo ParseProductPage()
         {
             ProductInfo productInfo = new()
             {
-                regionName = ExtractRegionName(),
-                breadCrumb = ExtractBreadCrumb(),
-                productName = ExtractProductName(),
-                actualPrice = ExtractActualPrice(),
-                oldPrice = ExtractOldPrice(),
-                availableStatus = ExtractAvailableStatus(),
+                regionName = ExtractDataBySelector(selectors["regionName"]),
+                breadCrumb = ExtractAllDataBySelector(selectors["breadCrumb"]),
+                productName = ExtractDataBySelector(selectors["productName"]),
+                actualPrice = ExtractDataBySelector(selectors["actualPrice"]),
+                oldPrice = ExtractDataBySelector(selectors["oldPrice"]),
+                availableStatus = ExtractDataBySelector(selectors["availableStatus"]),
                 picUrls = ExtractPicUrls(),
                 productUrl = ProductUrl
             };
