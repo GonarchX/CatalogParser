@@ -25,7 +25,7 @@ namespace CatalogParser
                 sb.Append(record.ToString(sep));
                 sb.Append(Environment.NewLine);
             }
-            File.AppendAllText(filePath, sb.ToString(), Encoding.UTF8);
+            File.AppendAllText(filePath, sb.ToString(), Encoding.GetEncoding(1251));
         }
         public static Dictionary<string, object> DictionaryFromType(object atype)
         {
