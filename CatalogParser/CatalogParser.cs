@@ -12,10 +12,10 @@ namespace CatalogParser
     {
         const string domainName = "https://www.toy.ru";
         const string productUrlsSelector = @"div[class*=""h-100 product-card""] a.d-block.img-link.text-center.gtm-click";
-        public static async Task ParseCatalogInCsvAsync(string sitePath, string csvFilePath, string sep)
+        public static async Task<List<ProductInfo>> ParseCatalogAsync(string catalogPath, string csvFilePath, string sep)
         {
-            List<string> productUrlsOnFirstPage = await ExtractAllProductUrlsOnPageAsync(sitePath, 1);
-            if (productUrlsOnFirstPage == null) throw new Exception($"Unavailable to extract products from first page in path: {domainName}{sitePath}!");
+            List<string> productUrlsOnFirstPage = await ExtractAllProductUrlsOnPageAsync(catalogPath, 1);
+            if (productUrlsOnFirstPage == null) throw new Exception($"Unavailable to extract products from first page in path: {domainName}{catalogPath}!");
 
             List<string> productUrlsOnCurrentPage = null;
             int curCatalogPageNum = 2;
@@ -34,33 +34,34 @@ namespace CatalogParser
                     tasks.Add(Task.Run(async () =>
                     {
                         var prodParser = await BuildProductParserAsync(productUrlsOnCurrentPage[syncCurProductPage]);
+                        Console.WriteLine($"Thread with number {Thread.CurrentThread.ManagedThreadId} parsed product page with number {syncCurProductPage} on catalog page with number {syncCurCatalogPage - 1}");
                         return prodParser.ParseProductPage();
-
-                        Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}: I'm parse product page with number {syncCurProductPage} on catalog page with number {syncCurCatalogPage - 1}");                       
                     }));
                 }
 
                 try
                 {
-                    productUrlsOnCurrentPage = await ExtractAllProductUrlsOnPageAsync(sitePath, curCatalogPageNum);
+                    productUrlsOnCurrentPage = await ExtractAllProductUrlsOnPageAsync(catalogPath, curCatalogPageNum);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Can't parse catalog page in path: {sitePath}{curCatalogPageNum}!\nReason: {ex}");
+                    Console.WriteLine($"Can't parse catalog page in path: {catalogPath}{curCatalogPageNum}!\nReason: {ex}");
                 }
 
                 curCatalogPageNum++;
             }
             var result = await Task.WhenAll(tasks);
-            CsvUtils.WriteProductInfoInFile(csvFilePath, result.ToList(), sep);
+            return result.ToList();
         }
 
         //Getting all product urls on the catalog page
-        private static async Task<List<string>> ExtractAllProductUrlsOnPageAsync(string sitePath, int catalogPageNumber = 1)
+        private static async Task<List<string>> ExtractAllProductUrlsOnPageAsync(string catalogPath, int catalogPageNumber = 1)
         {
-            var config = Configuration.Default.WithDefaultLoader();
+            //Default url params for getting specified page
             string urlParams = $"?filterseccode%5B0%5D=transport&PAGEN_5={catalogPageNumber}";
-            string curCatalogPageUrl = $"{domainName}/{sitePath}/{urlParams}";
+            //Building current catalog page url
+            string curCatalogPageUrl = $"{domainName}/{catalogPath}/{urlParams}";
+            var config = Configuration.Default.WithDefaultLoader();
             var context = BrowsingContext.New(config);
             var document = await context.OpenAsync(curCatalogPageUrl);
             return document.QuerySelectorAll(productUrlsSelector).Select(x => domainName + x.GetAttribute("href")).ToList();

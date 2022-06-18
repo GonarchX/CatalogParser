@@ -35,7 +35,7 @@ namespace CatalogParser
             Dictionary<string, object> dict = new Dictionary<string, object>();
             foreach (PropertyInfo prp in props)
             {
-                object value = prp.GetValue(atype, new object[] { });
+                object value = prp.GetValue(atype, Array.Empty<object>());
                 dict.Add(prp.Name, value);
             }
             return dict;
