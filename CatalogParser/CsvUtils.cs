@@ -26,19 +26,6 @@ namespace CatalogParser
                 sb.Append(Environment.NewLine);
             }
             File.AppendAllText(filePath, sb.ToString(), Encoding.GetEncoding(1251));
-        }
-        public static Dictionary<string, object> DictionaryFromType(object atype)
-        {
-            if (atype == null) return new Dictionary<string, object>();
-            Type t = atype.GetType();
-            PropertyInfo[] props = t.GetProperties();
-            Dictionary<string, object> dict = new();
-            foreach (PropertyInfo prp in props)
-            {
-                object value = prp.GetValue(atype, Array.Empty<object>());
-                dict.Add(prp.Name, value);
-            }
-            return dict;
-        }
+        }        
     }
 }
