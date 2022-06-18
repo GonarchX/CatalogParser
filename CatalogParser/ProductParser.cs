@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace CatalogParser
 {
-    internal class ProductParser
+    public class ProductParser
     {
         public string ProductUrl { get; }
         public IDocument Document { get; }
-        private ProductParser(string productUrl, IDocument document)
+        public ProductParser(string productUrl, IDocument document)
         {
             ProductUrl = productUrl;
             Document = document;
@@ -60,7 +60,7 @@ namespace CatalogParser
         public string ExtractRegionName()
         {
             string regionNameSelector = @"a[data-src=""#region""]";
-            var siteRegionName = Document.QuerySelector(regionNameSelector).TextContent;
+            var siteRegionName = GetContentIfExist(regionNameSelector).First().Trim();
             //Deleting unnecessary symbols from region name
             siteRegionName = Regex.Replace(siteRegionName, @"\t|\n|\r", "").Trim();
             return siteRegionName;
@@ -68,19 +68,19 @@ namespace CatalogParser
         public List<string> ExtractBreadCrumb()
         {
             var breadCrumbSelector = @"nav.breadcrumb > :not(:last-child)";
-            var breadCrumbs = Document.QuerySelectorAll(breadCrumbSelector).Select(x => x.TextContent.Trim()).ToList();
+            var breadCrumbs = GetContentIfExist(breadCrumbSelector).Select(x => x.Trim()).ToList();
             return breadCrumbs;
         }
         public string ExtractProductName()
         {
             string productNameSelector = "h1.detail-name";
-            var productName = Document.QuerySelector(productNameSelector).TextContent.Trim();
+            var productName = GetContentIfExist(productNameSelector).First().Trim();
             return productName;
         }
         public string ExtractActualPrice()
         {
             string actualPriceSelector = "span.price";
-            var actualPrice = Document.QuerySelector(actualPriceSelector).TextContent;
+            var actualPrice = GetContentIfExist(actualPriceSelector).First().Trim();
             return actualPrice;
         }
         public string ExtractOldPrice()
@@ -93,7 +93,7 @@ namespace CatalogParser
         public string ExtractAvailableStatus()
         {
             string availableStatusSelector = "span.ok";
-            var availableStatus = Document.QuerySelector(availableStatusSelector).TextContent.Trim();
+            var availableStatus = GetContentIfExist(availableStatusSelector).First().Trim();
             return availableStatus;
         }
         public List<string> ExtractPicUrls()
